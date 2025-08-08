@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router";
-// import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 export const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  // const { signInWithGitHub, signOut, user } = useAuth();
+  const { signInWithGitHub, signOut, user } = useAuth();
 
-  // const displayName = user?.user_metadata.user_name || user?.email;
+  const displayName = user?.user_metadata.user_name || user?.email;
   return (
     <nav className="fixed top-0 w-full z-40 bg-[rgba(10,10,10,0.8)] backdrop-blur-lg border-b border-white/10 shadow-lg">
       <div className="max-w-5xl mx-auto px-4">
@@ -44,7 +44,7 @@ export const Navbar = () => {
           </div>
 
           {/* Desktop Auth */}
-          {/* <div className="hidden md:flex items-center">
+          <div className="hidden md:flex items-center">
             {user ? (
               <div className="flex items-center space-x-4">
                 {user.user_metadata?.avatar_url && (
@@ -70,7 +70,7 @@ export const Navbar = () => {
                 Sign in with GitHub
               </button>
             )}
-          </div> */}
+          </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden">

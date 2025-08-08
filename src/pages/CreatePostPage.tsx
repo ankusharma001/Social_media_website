@@ -1,14 +1,12 @@
-import { PostList } from "../components/PostList";
+import { CreatePost } from "../components/CreatePost";
 
-export const Home = () => {
+export const CreatePostPage = () => {
   return (
-    <div className="pt-10">
+    <div className="pt-20">
       <h2 className="text-6xl font-bold mb-6 text-center bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
-        Recent Posts
+        Create New Post
       </h2>
-      <div>
-        <PostList />
-      </div>
+      <CreatePost />
     </div>
   );
 };
