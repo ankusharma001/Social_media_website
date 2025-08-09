@@ -4,41 +4,81 @@ import { supabase } from "../supabase-client";
 
 interface AuthContextType {
   user: User | null;
-  signInWithGitHub: () => void;
-  signOut: () => void;
+  signInWithGitHub: () => Promise<void>;
+  signOut: () => Promise<void>;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Error getting session:", error);
+        }
+        setUser(session?.user ?? null);
+      } catch (error) {
+        console.error("Error in getInitialSession:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_, session) => {
+    getInitialSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session?.user?.email);
       setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => {
-      listener.subscription.unsubscribe();
+      subscription.unsubscribe();
     };
   }, []);
 
-  const signInWithGitHub = () => {
-    supabase.auth.signInWithOAuth({ provider: "github" });
+  const signInWithGitHub = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+      if (error) {
+        console.error("GitHub sign in error:", error);
+        throw error;
+      }
+    } catch (error) {
+      console.error("Error signing in with GitHub:", error);
+      throw error;
+    }
   };
 
-  const signOut = () => {
-    supabase.auth.signOut();
+  const signOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Sign out error:", error);
+        throw error;
+      }
+    } catch (error) {
+      console.error("Error signing out:", error);
+      throw error;
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, signInWithGitHub, signOut }}>
-      {" "}
-      {children}{" "}
+    <AuthContext.Provider value={{ user, signInWithGitHub, signOut, loading }}>
+      {children}
     </AuthContext.Provider>
   );
 };
